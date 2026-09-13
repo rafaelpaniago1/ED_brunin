@@ -130,6 +130,27 @@ int pop(heap* h){
 }
 
 
+heap buildMaxHeap(size_t capacity, int* originalArray){
+   heap tmpHeap = newHeap(capacity);
+   tmpHeap.size = capacity;
+   for(int i = 0 ; i < capacity ; i ++){
+      tmpHeap.data[i] = originalArray[i];
+   }
+   for(int i = capacity/2 ; i >= 0 ; i--){
+      heapifyDown(&tmpHeap, i);
+   }
+   return tmpHeap;
+}
+
+void heapSort(size_t size, int* originalArray){
+
+   heap tmpHeap = buildMaxHeap(size, originalArray);
+   for(int i = 0 ; i < size ; i++){
+      originalArray[i] = pop(&tmpHeap);
+   }
+   destroyHeap(&tmpHeap);
+}
+
 int main(){
    size_t capacity = 10;
    heap pq = newHeap(capacity);
@@ -146,6 +167,13 @@ int main(){
       printf("\n");
    }
    destroyHeap(&pq);
+
+   int myVector[10];
+   for(int i = 0 ; i < 10 ; i++) myVector[i] = 10 - i;
+
+   heapSort(10, myVector);
+
+   for(int i = 0 ; i < 10 ; i++) printf("%d, ", myVector[i]);
 }
 
 
