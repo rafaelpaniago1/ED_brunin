@@ -66,10 +66,8 @@ void heapifyUp(heap* h, size_t index){
       return;
    }
    size_t parentIndex = parent(h, index);
-   //printf("Parent Index: %d\n", parentIndex);
    if(h->data[parentIndex] > h->data[index]){
 
-      //printf("Swaping: %d, %d\n", h->data[index], h->data[parentIndex]);
 
       swap(&h->data[parentIndex], &h->data[index]);
       heapifyUp(h, parentIndex);
@@ -81,11 +79,8 @@ void heapifyDown(heap* h, size_t index){
    if(index > h->size){
       return;
    }
-   //printf("PRINTING INSIDE HEAPIFY\n");
-   //printHeap(h);
    size_t leftSonIndex = leftSon(h, index);
    if(leftSonIndex == 0) return;
-   //printf("Left Son Index is %d\n", leftSonIndex);
 
    size_t rightSonIndex = rightSon(h, index);
 
@@ -99,7 +94,6 @@ void heapifyDown(heap* h, size_t index){
 
    size_t swapIndex = h->data[leftSonIndex] < h->data[rightSonIndex] ? leftSonIndex : rightSonIndex;
    if(h->data[swapIndex] < h->data[index]){
-      //printf("SWAPING: %d, %d\n", h->data[swapIndex], h->data[index]);
       swap(&h->data[swapIndex], &h->data[index]);
       heapifyDown(h, swapIndex);
    }
@@ -109,7 +103,6 @@ void heapifyDown(heap* h, size_t index){
 bool insert(heap* h, int a){
    if(h->size == h->capacity) return false;
 
-   //printf("Inserting element: %d\n", a);
 
    if(h->size == 0 && h->capacity != 0){
       h->data[0] = a;
@@ -133,7 +126,6 @@ int pop(heap* h){
    swap(&h->data[0], &h->data[h->size-1]);
    h->size--;
    heapifyDown(h, 0);
-   //printHeap(h);
    return top;
 }
 
