@@ -4,27 +4,37 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+typedef struct node{
+   int vertex;
+   double distance;
+} node;
+
 
 typedef struct heap{
    size_t capacity;
    size_t size;
-   int* data;
+   node* data;
 } heap;
 
 
-void swap(int* a, int* b){
-   int tmp = *a;
+bool isLess(node a, node b){
+   return a.distance < b.distance;
+}
+
+
+void swap(node* a, node* b){
+   node tmp = *a;
    *a = *b;
    *b = tmp;
 }
 
 
-heap newHeap(size_t capacity){
-   heap newHeap;
-   newHeap.capacity = capacity;
-   newHeap.size = 0;
-   newHeap.data = (int*) malloc(sizeof(int) * capacity);
-   if(newHeap.data == NULL){
+heap* newHeap(size_t capacity){
+   heap* newHeap = (heap*) malloc(sizeof(heap));
+   newHeap->capacity = capacity;
+   newHeap->size = 0;
+   newHeap->data = (node*) malloc(sizeof(node) * capacity);
+   if(newHeap->data == NULL){
       printf("Could no allocate data, heap is full");
       abort();
    }
@@ -33,9 +43,9 @@ heap newHeap(size_t capacity){
 
 
 void printHeap(heap* h){
-   printf("Heap elements:\n(");
+   printf("Heap elements:\n");
    for(size_t i = 0 ; i < h->size ; i++){
-      printf("%d, ", h->data[i]);
+      printf("(%d, %lf), ", h->data[i].vertex, h->data[i].distance);
    }
    printf(")\n");
 }
@@ -62,7 +72,7 @@ size_t rightSon(heap* h, size_t index){
 }
 
 
-void destroyHeap(heap* h){
+void destroyData(heap* h){
    free(h->data);
 }
 
@@ -72,7 +82,7 @@ void heapifyUp(heap* h, size_t index){
       return;
    }
    size_t parentIndex = parent(h, index);
-   if(h->data[parentIndex] > h->data[index]){
+   if(isLess(h->data[index], h->data[parentIndex])){
 
 
       swap(&h->data[parentIndex], &h->data[index]);
@@ -91,23 +101,28 @@ void heapifyDown(heap* h, size_t index){
    size_t rightSonIndex = rightSon(h, index);
 
    if(rightSonIndex == SIZE_MAX){
-      if(h->data[leftSonIndex] < h->data[index]){
+      if(isLess(h->data[leftSonIndex], h->data[index])){
          swap(&h->data[leftSonIndex], &h->data[index]);
          heapifyDown(h, leftSonIndex);
       }
       return;
    }
 
-   size_t swapIndex = h->data[leftSonIndex] < h->data[rightSonIndex] ? leftSonIndex : rightSonIndex;
-   if(h->data[swapIndex] < h->data[index]){
+   size_t swapIndex = isLess(h->data[leftSonIndex], h->data[rightSonIndex]) ? leftSonIndex : rightSonIndex;
+   if(isLess(h->data[swapIndex], h->data[index])){
       swap(&h->data[swapIndex], &h->data[index]);
       heapifyDown(h, swapIndex);
    }
 }
 
 
-bool insert(heap* h, int a){
-   if(h->size == h->capacity) return false;
+bool insert(heap* h, node a){
+   if(h->size == h->capacity){
+      node* ptr = realloc(h->data, 2 * h->capacity * sizeof(node));
+      if(!ptr) return false;
+      h->data = ptr;         
+      h->capacity = 2*h->capacity;
+   } 
 
 
    if(h->size == 0 && h->capacity != 0){
@@ -124,12 +139,12 @@ bool insert(heap* h, int a){
 }
 
 
-int pop(heap* h){
+node pop(heap* h){
    if(h->size == 0){
       printf("Can't call pop in an empty heap");
       abort();
    }
-   int top = h->data[0];
+   node top = h->data[0];
    swap(&h->data[0], &h->data[h->size-1]);
    h->size--;
    heapifyDown(h, 0);
@@ -137,50 +152,24 @@ int pop(heap* h){
 }
 
 
-heap buildMinHeap(size_t capacity, int* originalArray){
-   heap tmpHeap = newHeap(capacity);
-   tmpHeap.size = capacity;
-   for(int i = 0 ; i < capacity ; i ++){
-      tmpHeap.data[i] = originalArray[i];
-   }
-   for(int i = capacity/2 ; i >= 0 ; i--){
-      heapifyDown(&tmpHeap, i);
-   }
-   return tmpHeap;
-}
-
-void heapSort(size_t size, int* originalArray){
-
-   heap tmpHeap = buildMinHeap(size, originalArray);
-   for(int i = 0 ; i < size ; i++){
-      originalArray[i] = pop(&tmpHeap);
-   }
-   destroyHeap(&tmpHeap);
-}
 
 int main(){
    size_t capacity = 10;
-   heap pq = newHeap(capacity);
+   heap* pq = newHeap(capacity);
 
-   for(size_t i = 0 ; i < capacity ; i++){
-      insert(&pq, capacity - i);
+   for(size_t i = 0 ; i < capacity + 1 ; i++){
+      node n; n.distance = capacity - i; n.vertex = 0;
+      insert(pq, n);
    }
-   printHeap(&pq);
+   printHeap(pq);
    printf("\n");
 
    for(size_t i = 0 ; i < capacity ; i++){
-      pop(&pq);
-      printHeap(&pq);
+      pop(pq);
+      printHeap(pq);
       printf("\n");
    }
-   destroyHeap(&pq);
-
-   int myVector[10];
-   for(int i = 0 ; i < 10 ; i++) myVector[i] = 10 - i;
-
-   heapSort(10, myVector);
-
-   for(int i = 0 ; i < 10 ; i++) printf("%d, ", myVector[i]);
+   destroyData(pq);
 }
 
 
