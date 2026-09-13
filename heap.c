@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,6 +14,78 @@ typedef struct heap{
    size_t size;
    node* data;
 } heap;
+
+
+typedef struct vertexNode{
+   struct vertexNode* next;
+   node node;
+} vertexNode;
+
+
+void printList(vertexNode* head){
+   vertexNode* curr = head;
+   while(curr){
+      printf("%d, ", curr->node.vertex);
+      printf("\n");
+      curr = curr->next;
+   }
+}
+
+
+void listPush(vertexNode** head, int vertex, double distance){
+   vertexNode* vNode = (vertexNode*) malloc(sizeof(vertexNode));
+   vNode->next = *head;
+   node data = {vertex, distance};
+   vNode->node = data;
+   *head = vNode;
+}
+
+
+void freeList(vertexNode* head){
+   vertexNode* curr = head;
+   while(curr != NULL){
+      vertexNode* tmp = curr;
+      curr = curr->next;
+      free(tmp);
+   }
+}
+
+
+typedef struct graph{
+   vertexNode** adjList;
+   size_t n;
+} graph;
+
+
+graph* newGraph(size_t n){
+   vertexNode** adjList = (vertexNode**) malloc(sizeof(vertexNode*) * n); 
+   if(!adjList){
+      printf("couldnt allocate adjList for graph of this size");
+      abort();
+   }
+   for(size_t i = 0 ; i < n ; i++){
+      adjList[i] = NULL;
+   }
+   graph* newGraph = (graph*) malloc(sizeof(graph));
+   newGraph->adjList = adjList;
+   newGraph->n = n;
+   return newGraph;
+}
+
+
+void freeGraph(graph* g){
+   for(size_t i = 0 ; i < g->n ;i++){
+      freeList(g->adjList[i]);
+   }
+   free(g->adjList);
+   free(g);
+}
+
+
+void addEdge(graph* g, int src, int dst, double weight){
+   //printf("Adding edge from node: %d, with weight: %f\n", src, weight);
+   listPush(&g->adjList[src], dst, weight);
+}
 
 
 bool isLess(node a, node b){
@@ -72,8 +143,14 @@ size_t rightSon(heap* h, size_t index){
 }
 
 
-void destroyData(heap* h){
+void freeHeap(heap* h){
    free(h->data);
+   free(h);
+}
+
+
+bool isEmpty(heap* h){
+   return h->size == 0;
 }
 
 
@@ -152,29 +229,63 @@ node pop(heap* h){
 }
 
 
+double* dijkstra(graph* g, int src){
 
-int main(){
-   size_t capacity = 10;
-   heap* pq = newHeap(capacity);
+   double* dists = (double*) malloc(sizeof(double) * g->n);
+   bool visited[g->n];
 
-   for(size_t i = 0 ; i < capacity + 1 ; i++){
-      node n; n.distance = capacity - i; n.vertex = 0;
-      insert(pq, n);
+   for(size_t i = 0 ; i < g->n ; i++){
+      dists[i] = SIZE_MAX;
+      visited[i] = false;
    }
-   printHeap(pq);
-   printf("\n");
 
-   for(size_t i = 0 ; i < capacity ; i++){
-      pop(pq);
-      printHeap(pq);
-      printf("\n");
+   dists[src] = 0;
+   heap* pq = newHeap(g->n);
+   node n = {src, 0};
+   insert(pq, n);
+
+   while(!isEmpty(pq)){
+
+      node curr = pop(pq);
+      if(visited[curr.vertex]) continue;
+      visited[curr.vertex] = true;
+
+      vertexNode* neigh = g->adjList[curr.vertex];
+
+      while(neigh){
+         double newDist = dists[curr.vertex] + neigh->node.distance;
+
+         if(!visited[neigh->node.vertex] && newDist < dists[neigh->node.vertex]){
+            dists[neigh->node.vertex] = newDist;
+            node n; n.distance = newDist; n.vertex = neigh->node.vertex;
+            insert(pq, n);
+         }
+         neigh = neigh->next;
+      }
    }
-   destroyData(pq);
+
+   freeHeap(pq);
+   return dists;
 }
 
 
+int main(){
+   graph* g = newGraph(5);
+   addEdge(g, 0, 1, 4);
+   addEdge(g, 0, 2, 2);
+   addEdge(g, 1, 2, 1);
+   addEdge(g, 1, 3, 5);
+   addEdge(g, 2, 3, 8);
+   addEdge(g, 2, 4, 10);
+   addEdge(g, 3, 4, 2);
 
+   double* dists = dijkstra(g, 0); 
 
+   for(int i = 0 ; i < 5 ; i++){
+      printf("%f, ", dists[i]);
+   }
+   printf("\n");
 
-
-
+   free(dists);
+   freeGraph(g);
+}
