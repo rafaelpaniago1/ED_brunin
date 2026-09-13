@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -22,6 +24,10 @@ heap newHeap(size_t capacity){
    newHeap.capacity = capacity;
    newHeap.size = 0;
    newHeap.data = (int*) malloc(sizeof(int) * capacity);
+   if(newHeap.data == NULL){
+      printf("Could no allocate data, heap is full");
+      abort();
+   }
    return newHeap;
 }
 
@@ -46,13 +52,13 @@ size_t parent(heap* h, size_t index){
 
 size_t leftSon(heap* h, size_t index){
    size_t leftSonIndex = 2*index + 1;
-   return (leftSonIndex < h->size ? leftSonIndex : 0);
+   return (leftSonIndex < h->size ? leftSonIndex : SIZE_MAX);
 }
 
 
 size_t rightSon(heap* h, size_t index){
    size_t rightSonIndex = 2*index + 2;
-   return (rightSonIndex < h->size ? rightSonIndex : 0);
+   return (rightSonIndex < h->size ? rightSonIndex : SIZE_MAX);
 }
 
 
@@ -80,11 +86,11 @@ void heapifyDown(heap* h, size_t index){
       return;
    }
    size_t leftSonIndex = leftSon(h, index);
-   if(leftSonIndex == 0) return;
+   if(leftSonIndex == SIZE_MAX) return;
 
    size_t rightSonIndex = rightSon(h, index);
 
-   if(rightSonIndex == 0){
+   if(rightSonIndex == SIZE_MAX){
       if(h->data[leftSonIndex] < h->data[index]){
          swap(&h->data[leftSonIndex], &h->data[index]);
          heapifyDown(h, leftSonIndex);
@@ -111,8 +117,9 @@ bool insert(heap* h, int a){
    }
 
    h->data[h->size] = a;
-   heapifyUp(h, h->size);
+   int tmpSize = h->size;
    h->size++;
+   heapifyUp(h, tmpSize);
    return true;
 }
 
@@ -130,7 +137,7 @@ int pop(heap* h){
 }
 
 
-heap buildMaxHeap(size_t capacity, int* originalArray){
+heap buildMinHeap(size_t capacity, int* originalArray){
    heap tmpHeap = newHeap(capacity);
    tmpHeap.size = capacity;
    for(int i = 0 ; i < capacity ; i ++){
@@ -144,7 +151,7 @@ heap buildMaxHeap(size_t capacity, int* originalArray){
 
 void heapSort(size_t size, int* originalArray){
 
-   heap tmpHeap = buildMaxHeap(size, originalArray);
+   heap tmpHeap = buildMinHeap(size, originalArray);
    for(int i = 0 ; i < size ; i++){
       originalArray[i] = pop(&tmpHeap);
    }
