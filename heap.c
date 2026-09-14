@@ -16,14 +16,14 @@ typedef struct heap{
 } heap;
 
 
-typedef struct vertexNode{
-   struct vertexNode* next;
+typedef struct listNode{
+   struct listNode* next;
    node node;
-} vertexNode;
+} listNode;
 
 
-void printList(vertexNode* head){
-   vertexNode* curr = head;
+void printList(listNode* head){
+   listNode* curr = head;
    while(curr){
       printf("%d, ", curr->node.vertex);
       printf("\n");
@@ -32,8 +32,8 @@ void printList(vertexNode* head){
 }
 
 
-void listPush(vertexNode** head, int vertex, double distance){
-   vertexNode* vNode = (vertexNode*) malloc(sizeof(vertexNode));
+void listPush(listNode** head, int vertex, double distance){
+   listNode* vNode = (listNode*) malloc(sizeof(listNode));
    vNode->next = *head;
    node data = {vertex, distance};
    vNode->node = data;
@@ -41,10 +41,10 @@ void listPush(vertexNode** head, int vertex, double distance){
 }
 
 
-void freeList(vertexNode* head){
-   vertexNode* curr = head;
+void freeList(listNode* head){
+   listNode* curr = head;
    while(curr != NULL){
-      vertexNode* tmp = curr;
+      listNode* tmp = curr;
       curr = curr->next;
       free(tmp);
    }
@@ -52,13 +52,13 @@ void freeList(vertexNode* head){
 
 
 typedef struct graph{
-   vertexNode** adjList;
+   listNode** adjList;
    size_t n;
 } graph;
 
 
 graph* newGraph(size_t n){
-   vertexNode** adjList = (vertexNode**) malloc(sizeof(vertexNode*) * n); 
+   listNode** adjList = (listNode**) malloc(sizeof(listNode*) * n); 
    if(!adjList){
       printf("couldnt allocate adjList for graph of this size");
       abort();
@@ -250,7 +250,7 @@ double* dijkstra(graph* g, int src){
       if(visited[curr.vertex]) continue;
       visited[curr.vertex] = true;
 
-      vertexNode* neigh = g->adjList[curr.vertex];
+      listNode* neigh = g->adjList[curr.vertex];
 
       while(neigh){
          double newDist = dists[curr.vertex] + neigh->node.distance;
@@ -275,6 +275,7 @@ int main(){
    addEdge(g, 0, 2, 2);
    addEdge(g, 1, 2, 1);
    addEdge(g, 1, 3, 5);
+   addEdge(g, 2, 1, 1);
    addEdge(g, 2, 3, 8);
    addEdge(g, 2, 4, 10);
    addEdge(g, 3, 4, 2);
