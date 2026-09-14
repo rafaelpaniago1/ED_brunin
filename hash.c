@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 
 typedef struct student{
@@ -34,7 +35,9 @@ size_t hash(unsigned int k){
 
 void pushStudent(listNode** head, unsigned int matricula, char* nome){
    listNode* node = (listNode*) malloc(sizeof(listNode));
-   student novoEstudante = {matricula, nome};
+   char* name = (char*) malloc(sizeof(char) * strlen(nome) + 1);
+   strcpy(name, nome);
+   student novoEstudante = {matricula, name};
    node->thisStudent = novoEstudante;
    node->next = *head;
    *head = node;
@@ -52,6 +55,7 @@ void freeList(listNode* head){
    while(curr != NULL){
       listNode* tmp = curr;
       curr = curr->next;
+      free(tmp->thisStudent.nome);
       free(tmp);
    }
 }
@@ -73,7 +77,11 @@ void insertOrUpdate(hashTable* t, student s, size_t hash_value){
    listNode* l = t->arr[hash_value];
    while(l != NULL){
       if(l->thisStudent.matricula == s.matricula){
-         l->thisStudent.nome = s.nome;
+
+         free(l->thisStudent.nome);
+         char* name = (char*) malloc(strlen(s.nome) + 1);
+         strcpy(name, s.nome);
+         l->thisStudent.nome = name;
          return;
       }
       l = l->next;
@@ -156,9 +164,3 @@ int main(){
 
    freeTable(t);
 }
-
-
-
-
-
-
