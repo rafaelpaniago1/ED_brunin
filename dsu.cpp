@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-unsigned int global_counter = 0;
 
 void Switch(int* a, int* b){
    int tmp = *a;
