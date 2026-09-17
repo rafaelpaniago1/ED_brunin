@@ -1,3 +1,5 @@
+import heapq
+
 class Graph:
 
     def __init__(self, vertices):
@@ -26,6 +28,27 @@ class Graph:
                 dsu.union(src, dst)
 
         return result
+
+
+    def prim(self):
+
+        heap = [(0,0,0)]
+        visited = [False] * self.vertices
+        solution = []
+
+        while heap:
+
+            weight, parent, curr = heapq.heappop(heap)
+            if visited[curr]:
+                continue
+            if (weight, parent, curr) != (0,0,0):
+                solution.append((parent, curr, weight))
+            visited[curr] = True
+            for dst, weight in self.adjList[curr]:
+                if not visited[dst]:
+                    heapq.heappush(heap, (weight, curr, dst))
+
+        return solution
 
 
 class Dsu:
@@ -64,9 +87,14 @@ if __name__ == "__main__":
     g.addEdge(2, 0, 7)
     g.addEdge(2, 3, 8)
     result = g.kruskal()
+    result2 = g.prim()
 
     for src, dst, weight in result:
         print(f"Source: {src}, Destination: {dst}, Weight: {weight}")
+
+    for src, dst, weight in result2:
+        print(f"Source: {src}, Destination: {dst}, Weight: {weight}")
+
 
 
 
